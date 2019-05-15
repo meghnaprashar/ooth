@@ -129,6 +129,28 @@ class OothClient {
         })
     }
     subscribeStatus() {
+        const HEARTBEAT = {
+            ping: 'PING',
+            pong: 'PONG',
+            timeout: 31000
+        }
+        let
+            pongTimeout,
+            heartBeat = ws => {
+                console.log("Got Ping >>> sending Pong")
+                ws.send(JSON.stringify({ msg: HEARTBEAT.pong }))
+                // prevent the socket connection close
+                clearTimeout(pongTimeout)
+                // schedule socket connection close
+                pongTimeout = setTimeout(function heartBeatCheck() {
+                    console.log("Socket Closing from client")
+                    // close the socket connection
+                    ws.close()
+                }, HEARTBEAT.timeout)
+            },
+            stopHeartBeat = () => {
+                clearTimeout(pongTimeout)
+            };
         if (typeof WebSocket !== 'undefined') {
             const urlParts = url.parse(this.oothUrl)
             const protocol = urlParts.protocol === 'https:' ? 'wss' : 'ws'
@@ -136,11 +158,20 @@ class OothClient {
             const socket = new WebSocket(wsUrl)
             socket.onerror = (err) => {
                 console.error(err)
+                stopHeartBeat()
             }
             socket.onopen = () => {}
-            socket.onclose = () => {}
+            socket.onclose = () => {
+                stopHeartBeat()
+            }
             socket.onmessage = ({ data }) => {
-                const { user } = JSON.parse(data)
+                var { user, msg } = JSON.parse(data)
+                user = user || null
+                    if (msg && msg === HEARTBEAT.ping) {
+                        // resetHeartBeat()
+                        heartBeat(socket)
+                        return
+                    }
                 return this.next(user)
             }
         }
