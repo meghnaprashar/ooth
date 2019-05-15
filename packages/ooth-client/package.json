@@ -9,7 +9,7 @@
     "build": "babel src --out-dir lib --ignore '**/*.test.js'",
     "test": "jest"
   },
-  "author": "Nicola Marcacci Rossi <nicolamr@gmail.com> (http://nmr.io)",
+  "author": "Meghna",
   "license": "MIT",
   "dependencies": {
     "babel-cli": "^6.24.1",
