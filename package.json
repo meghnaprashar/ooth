@@ -1,11 +1,14 @@
 {
-  "devDependencies": {
-    "lerna": "2.0.0-beta.36"
-  },
   "scripts": {
-    "link": "lerna run link --concurrency=1",
-    "test": "lerna run test --concurrency=1",
-    "bootstrap": "lerna exec yarn --concurrency=1",
-    "prepublish": "lerna run prepublish --concurrency=1"
+    "docs": "doctoc docs",
+    "check-clean-repo": "test -z \"$(git status --porcelain)\"",
+    "bootstrap": "rm -rf packages/*/node_modules && rm -f packages/*/package-lock.json && lerna exec \"npm i\" --concurrency=1",
+    "build": "lerna run build --concurrency=1",
+    "test-build": "lerna exec \"npm run test && npm run build\" --concurrency=1",
+    "safe-publish": "npm run check-clean-repo && npm run bootstrap && lerna link && npm run build && npm run test-build && lerna publish"
+  },
+  "devDependencies": {
+    "doctoc": "^1.3.1",
+    "lerna": "^3.4.0"
   }
 }
